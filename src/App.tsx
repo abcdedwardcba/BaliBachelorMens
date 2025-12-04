@@ -24,10 +24,13 @@ import {
 } from 'firebase/firestore';
 
 // --- CONFIGURATION ---
-const SYSTEM_APP_ID = "Bali_2026_Netflix_Final_Rev3";
+// 🔥 Rev6: 强制重置版本，修复白屏问题
+const SYSTEM_APP_ID = "Bali_2026_Netflix_Final_Rev6";
 const APP_NAME = "BALI BACHELOR"; 
+const NETFLIX_RED = "bg-[#E50914]";
+const NETFLIX_TEXT = "text-[#E50914]";
 
-// --- 🔥 这里的 Key 已经帮你填好了 (Bali Bachelor Mens) ---
+// --- 🔥 FIREBASE CONFIG (已填入 Bali Key) ---
 const firebaseConfig = {
   apiKey: "AIzaSyD9_KvqbU-NlulRsb80wLmZiRJhbDemdFs",
   authDomain: "bali-bachelor-mens.firebaseapp.com",
@@ -43,11 +46,12 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 
 // --- INITIAL DATA (Cloud Seed) ---
+// ✅ 已修复头像链接，使用 v9 接口
 const DEFAULT_USERS = [
-  { id: 'u1', name: 'Edward', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Edward' },
-  { id: 'u2', name: 'Jayden', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Jayden' },
-  { id: 'u3', name: 'Eugene', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Eugene' },
-  { id: 'u4', name: 'Daniel', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Daniel' },
+  { id: 'u1', name: 'Edward', avatar: 'https://api.dicebear.com/9.x/adventurer/svg?seed=Edward' },
+  { id: 'u2', name: 'Jayden', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Eugene' }, // Jayden 用 Eugene 的旧版头像
+  { id: 'u3', name: 'Eugene', avatar: 'https://api.dicebear.com/9.x/adventurer/svg?seed=Eugene' },
+  { id: 'u4', name: 'Daniel', avatar: 'https://api.dicebear.com/9.x/adventurer/svg?seed=Daniel' },
 ];
 
 const DEFAULT_PACKING_ITEMS = [
@@ -153,7 +157,7 @@ const compressAndUpload = (file, maxWidth = 400) => {
         canvas.height = height;
         const ctx = canvas.getContext('2d');
         ctx.drawImage(img, 0, 0, width, height);
-        resolve(canvas.toDataURL('image/jpeg', 0.8));
+        resolve(canvas.toDataURL('image/jpeg', 0.7));
       };
     };
   });
@@ -183,8 +187,7 @@ const useFirestore = (appId) => {
   useEffect(() => {
     if (!user) return;
     
-    // Path: artifacts -> {APP_ID} -> public -> data -> trip_data -> netflix_final_v1
-    const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'trip_data', 'netflix_final_v1');
+    const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'trip_data', 'netflix_final_v6');
     
     const unsubscribe = onSnapshot(docRef, (snap) => {
       if (snap.exists()) {
@@ -197,7 +200,7 @@ const useFirestore = (appId) => {
       }
       setLoading(false);
     }, (err) => {
-      console.error("Firestore Error: 记得检查 Rules 是否为 true", err);
+      console.error("Firestore Error: 请检查 Rules 是否为 true", err);
       setLoading(false);
     });
     
@@ -206,7 +209,7 @@ const useFirestore = (appId) => {
 
   const updateStore = async (newData) => {
     if (!user) return;
-    const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'trip_data', 'netflix_final_v1');
+    const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'trip_data', 'netflix_final_v6');
     setData(prev => ({ ...prev, ...newData })); // Optimistic UI
     await updateDoc(docRef, newData);
   };
@@ -263,7 +266,14 @@ const UserSelectScreen = ({ users, onSelect, onUpdateUser }) => {
               onClick={() => onSelect(u)}
               className="w-28 h-28 rounded-md overflow-hidden hover:ring-4 ring-white transition-all relative"
             >
-              <img src={u.avatar} alt={u.name} className="w-full h-full object-cover" />
+              <img 
+                src={u.avatar} 
+                alt={u.name} 
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  e.currentTarget.src = `https://api.dicebear.com/9.x/initials/svg?seed=${u.name}`;
+                }}
+              />
             </button>
             <span className="text-gray-400 group-hover:text-white text-lg font-normal">{u.name}</span>
             
