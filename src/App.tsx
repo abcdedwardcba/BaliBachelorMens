@@ -24,7 +24,7 @@ import {
 } from 'firebase/firestore';
 
 // --- CONFIGURATION ---
-const SYSTEM_APP_ID = "Bali_2026_Netflix_Final_Rev1";
+const SYSTEM_APP_ID = "Bali_2026_Netflix_Final_Rev3";
 const APP_NAME = "BALI BACHELOR"; 
 
 // --- 🔥 这里的 Key 已经帮你填好了 (Bali Bachelor Mens) ---
